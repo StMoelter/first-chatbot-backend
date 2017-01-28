@@ -3,7 +3,7 @@ FROM ruby:2.4.0-alpine
 WORKDIR /chat
 
 RUN apk --update add --virtual build-dependencies build-base ruby-dev libxml2-dev libxslt-dev \
-        nodejs tzdata bash supervisor nginx git sqlite-dev
+        nodejs tzdata bash supervisor nginx git postgresql-dev
 
 COPY Gemfile ./
 COPY Gemfile.lock ./
