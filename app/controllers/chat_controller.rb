@@ -5,7 +5,7 @@ class ChatController < ApplicationController
   def apiai
     render json: {fulfillment: {
         source: "apiai-wikitest-webhook-sample",
-        displayText: params.to_unsafe_h
+        displayText: params.to_unsafe_h.to_json.to_s
     }}
   end
 end
