@@ -1,3 +1,7 @@
 class WelcomeController < ApplicationController
-  def main; end
+  skip_before_filter :verify_authenticity_token
+
+  def main
+  end
+
 end

@@ -1,0 +1,139 @@
+version: '2'
+
+services:
+  nginx:
+    image: 127.0.0.1:5000/nginx-certbot:1.0.8
+    container_name: nginx
+    volumes:
+      - /home/docker/data/nginx/log:/var/log/nginx
+      - /home/docker/config/nginx/certs:/etc/ssl/nginx
+      - /home/docker/config/nginx/conf:/etc/nginx/conf.d
+      - /home/docker/config/nginx/httpasswd:/etc/nginx/httpasswd:ro
+      - /home/docker/config/nginx/httpasswd-jira:/etc/nginx/httpasswd-jira:ro
+      - /home/docker/config/nginx/certs/ca-root.pem:/etc/ssl/certs/my-root.pem
+      - /home/docker/data/nginx/letsencrypt:/etc/letsencrypt
+    ports:
+      - "80:80"
+      - 443:443
+    networks:
+      - app_net
+
+  registry:
+    container_name: registry
+    hostname: registry
+    image: registry
+    restart: always
+    volumes:
+      - /home/docker/data/registry:/var/lib/registry
+    ports:
+      - 127.0.0.1:5000:5000
+    networks:
+      - app_net
+
+  chat:
+    container_name: chat
+    hostname: chat
+    image: 127.0.0.1:5000/chat:staging
+    restart: always
+    volumes:
+      - /home/docker/data/chat/log:/audioscreen/log
+      - /home/docker/data/chat/uploads:/audioscreen/public/uploads
+      - /home/docker/config/chat/secrets.yml:/audioscreen/config/secrets.yml:ro
+      - /home/docker/config/chat/database.yml:/audioscreen/config/database.yml:ro
+    networks:
+      - app_net
+
+  audioscreenpg:
+    container_name: audioscreenpg
+    hostname: audioscreenpg
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=chat
+      - POSTGRES_USER=chat
+      - POSTGRES_DB=chat_production
+    volumes:
+      - /home/docker/data/audioscreenpg/data:/var/lib/postgresql/data
+    ports:
+      - 127.0.0.1:5429:5432
+    networks:
+      - app_net
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:alpine
+    command: "redis-server --appendonly yes"
+    volumes:
+      - /home/docker/data/redis/data:/data
+    ports:
+      - 127.0.0.1:6379:6379
+    networks:
+      - app_net
+
+  registryui:
+    container_name: registryui
+    hostname: registryui
+    image: hyper/docker-registry-web
+    restart: always
+    environment:
+      - REGISTRY_URL=http://registry:5000/v2
+      - REGISTRY_NAME=127.0.0.1:5000
+    networks:
+      - app_net   
+
+  influxdb:
+    container_name: influxdb
+    restart: always
+    image: 127.0.0.1:5000/influxdb
+    hostname: influxdb
+    domainname: sonormed.de
+    volumes:
+      - /home/docker/config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - /usr/share/collectd/types.db:/etc/collectd/types.db:ro
+      - /home/docker/data/influxdb:/var/lib/influxdb
+    ports:
+      - 127.0.0.1:8086:8086
+      - 127.0.0.1:8083:8083
+      - "127.0.0.1:25826:25826/udp"
+    networks:
+      - app_net
+
+  grafana:
+    container_name: grafana
+    restart: always
+    image: 127.0.0.1:5000/grafana
+    hostname: grafana
+    domainname: sonormed.de
+    environment:
+      - GF_SERVER_ROOT_URL=https://grafana.sonormed.de
+      - GF_SECURITY_ADMIN_PASSWORD=ohrgeraeusch
+    volumes:
+      - /home/docker/data/grafana/lib:/var/lib/grafana
+      - /home/docker/data/grafana/log:/var/log/grafana
+      - /home/docker/data/grafana/etc:/etc/grafana
+    networks:
+      - app_net
+
+  cadvisor:
+    container_name: cadvisor
+    restart: always
+    image: google/cadvisor:latest
+    volumes:
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    command: -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxdb:8086
+    ports:
+      - 127.0.0.1:7080:8080
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.239.0/24
+        gateway: 172.16.239.1
