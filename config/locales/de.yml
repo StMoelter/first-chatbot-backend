@@ -1,0 +1,5 @@
+de:
+  time:
+    formats:
+      date_long: "%A der %d. %B %Y"
+      date_time_long: "Es ist %H:%M Uhr und %S Sekunden am %A dem %d. %B %Y (Zeitzone: %Z)"
