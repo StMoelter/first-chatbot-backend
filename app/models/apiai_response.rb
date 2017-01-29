@@ -2,12 +2,9 @@ class ApiaiResponse
 
   def initialize(params = {})
     @response = params.deep_symbolize_keys
-    puts "------------------------------------------------"
-    puts @response
-
   end
 
-  def intend
+  def intent
     @response.dig(:result, :metadata, :intentName)
   end
 

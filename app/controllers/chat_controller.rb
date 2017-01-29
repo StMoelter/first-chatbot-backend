@@ -4,10 +4,12 @@ class ChatController < ApplicationController
 
   def apiai
     apiai_response = ApiaiResponse.new(params.to_unsafe_h)
+    processor = IntentProcessorFactory.new(apiai_response.intent).klass
+    output = processor.process(apiai_response.entities)
     render json: {
       source: "apiai-wikitest-webhook-sample",
-      displayText: apiai_response.to_json.to_s,
-      speech: apiai_response.to_json.to_s
+      displayText: output,
+      speech: output
     }
   end
 end
