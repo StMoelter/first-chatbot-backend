@@ -38,7 +38,6 @@ group :development, :test do
   gem 'byebug', platform: :mri
   gem 'rubocop'
   gem 'sqlite3'
-
 end
 
 group :development do

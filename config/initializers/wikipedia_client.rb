@@ -1,4 +1,4 @@
 require 'wikipedia'
-Wikipedia.Configure {
+Wikipedia.Configure do
   domain 'de.wikipedia.org'
-}
+end

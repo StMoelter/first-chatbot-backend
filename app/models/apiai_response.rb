@@ -1,5 +1,4 @@
 class ApiaiResponse
-
   def initialize(params = {})
     @response = params.deep_symbolize_keys
   end
@@ -18,5 +17,4 @@ class ApiaiResponse
       entities: entities
     }.to_json
   end
-
 end
